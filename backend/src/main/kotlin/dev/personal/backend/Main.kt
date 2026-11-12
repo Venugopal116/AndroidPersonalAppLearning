@@ -44,13 +44,13 @@ fun Application.foundation(service: IdentityService, limiter: RateLimiter = Rate
         exception<SQLException> { call, failure ->
             if (failure.sqlState == "23505") call.respond(HttpStatusCode.Conflict, ApiError("conflict", "Account or installation already exists."))
             else {
-                environment.log.error("Database operation failed")
+                call.application.environment.log.error("Database operation failed")
                 call.respond(HttpStatusCode.InternalServerError, ApiError("internal", "Unable to complete the request."))
             }
         }
         exception<Throwable> { call, failure ->
             if (failure is CancellationException) throw failure
-            environment.log.error("Request failed: ${failure::class.simpleName}")
+            call.application.environment.log.error("Request failed: ${failure::class.simpleName}")
             call.respond(HttpStatusCode.InternalServerError, ApiError("internal", "Unable to complete the request."))
         }
     }
