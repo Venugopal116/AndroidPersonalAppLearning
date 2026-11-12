@@ -3,6 +3,7 @@ package dev.personal.backend
 import dev.personal.contracts.*
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.util.Locale
 import java.util.UUID
 
@@ -14,6 +15,17 @@ class IdentityService(
     private val now: () -> Long = System::currentTimeMillis,
 ) {
     private val dummyHash = Security.password(Security.token())
+    fun readiness(): Readiness {
+        try {
+            database.transaction {
+                if (rows("SELECT 1") { it.getInt(1) }.single() != 1)
+                    throw ApiFailure(503, "not_ready", "The database is not ready.")
+            }
+        } catch (_: SQLException) {
+            throw ApiFailure(503, "not_ready", "The database is not ready.")
+        }
+        return Readiness("ready", "personal-device-lab", 1)
+    }
     private fun id() = UUID.randomUUID().toString()
     private fun reject(status: Int, code: String, text: String): Nothing = throw ApiFailure(status, code, text)
     private fun email(value: String): String = value.trim().lowercase(Locale.ROOT).also {

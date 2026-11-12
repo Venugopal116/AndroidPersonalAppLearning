@@ -32,6 +32,7 @@ import java.util.UUID
 @Serializable data class PairingCode(val code: String, val expiresAt: Long)
 @Serializable data class RedeemPairing(val code: String, val device: DeviceInput)
 @Serializable data class Health(val status: String)
+@Serializable data class Readiness(val status: String, val service: String, val apiVersion: Int)
 
 fun DeviceInput.isValid(): Boolean = validInstallationId(installationId) &&
     listOf(name, manufacturer, model, androidVersion).all { it.isNotBlank() && it.length <= 100 } &&

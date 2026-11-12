@@ -21,6 +21,31 @@ The existing OS can be retained only with an approved security-maintenance plan;
 
 ## Build Away From the Micro VM
 
+### Codemagic Image Archive
+
+Select the manual `backend-image` workflow on `main` after the updated foundation tests pass. Jib packages the application against the Temurin 17 base for Linux/amd64, even though the runner is an ARM Mac. No Docker daemon or registry login is needed on that runner. Download `backend-deployment.tar.gz` from Codemagic Artifacts and transfer it through an approved method to a new dedicated directory on the VM. Do not put keys/secrets in the archive or replace existing application directories.
+
+After reviewing and extracting the archive, run only the read-only check first:
+
+```sh
+python3 deploy/preflight.py --json
+```
+
+It prints no process arguments, account/subscription details or private keys. It runs no privileged commands and makes no service, firewall, package or OS changes. It fails closed for unrecognized/missing Ubuntu security support, less than 600 MiB current available RAM, insufficient disk, unavailable Docker/Compose clients or occupied/unknown public ports. The 600 MiB threshold allows the 400 MiB profile plus a 200 MiB provisional coexistence margin. An attached/enabled ESM report is not proof all patches have been applied. Passing is only eligibility for staging review; peak workload, backups and recovery still require operator verification.
+
+The previous VM report (504 MiB available, Ubuntu 20.04 without ESM) does not pass. Do not work around the report by lowering its thresholds, killing Telethon or silently adding swap. Resolve the specific blockers with an approved plan.
+
+Only after all gates, trusted DNS/TLS configuration, reviewed staging tests and explicit operator approval, a Docker-authorized operator can load the prebuilt image and validate the smaller configuration:
+
+```sh
+docker load -i backend/build/jib-image.tar
+docker compose --env-file deploy/.env -f deploy/compose.yml -f deploy/compose.micro.yml config --quiet
+```
+
+The micro override caps PostgreSQL/API/Caddy at 96/256/48 MiB. `JAVA_TOOL_OPTIONS` applies the runtime limits to both Jib and distribution-based images; do not put secrets in it because the JVM can print those options. These caps have not been benchmarked and may cause OOM/restarts under load. Validate a staging launch and recovery before using the VM's shared resources. The normal startup command below is not approval to launch this smaller profile untested.
+
+No domain purchase is required: choose an available subdomain with a DNS provider whose terms permit your use, and set its A record to the current public VM IP through the provider's authorized interface. DNS registration/account authorization must be performed by the owner; do not put provider tokens in Android or source. Test trusted HTTPS before entering the origin into the app. No hostname has been registered by this project, and the app still has no live server address until deployment is complete.
+
 Use the Codemagic `android-foundation` workflow for the backend distribution ZIP and Android debug APK. Do not compile Kotlin or build Gradle dependencies on the 1 GB server. The following local commands are optional for a separate, authorized build host, not prerequisites on the restricted computer:
 
 ```powershell
@@ -28,7 +53,7 @@ Use the Codemagic `android-foundation` workflow for the backend distribution ZIP
 docker build -f deploy/Dockerfile -t personal-device-backend:0.1.0 .
 ```
 
-The Docker command requires an approved build host with Docker; it is not a requirement for building the Android app. Transfer the resulting image through an approved private registry or image archive. Codemagic provides a distribution ZIP; the optional GitHub workflow uploads the JVM distribution directory. Neither publishes an image nor deploys automatically. No registry credentials are supplied. A non-container service deployment would require a separately reviewed resource/permissions configuration; none has been validated yet.
+The Docker command requires an approved build host with Docker; it is not a requirement for building the Android app. Transfer the resulting image through an approved private registry or image archive. The `android-foundation` workflow provides a distribution ZIP; the optional GitHub workflow uploads the JVM distribution directory. Use `backend-image` for the ready-to-load image archive instead. No workflow deploys automatically or publishes to a registry, and no registry credentials are supplied. A non-container service deployment would require a separately reviewed resource/permissions configuration; none has been validated yet.
 
 Review current security updates and pin reviewed image digests before a production deployment. The readable major-version tags in Compose are a learning baseline, not immutable supply-chain locks.
 
@@ -58,7 +83,7 @@ Memory caps: PostgreSQL 192 MiB, API 448 MiB and Caddy 96 MiB. This leaves limit
 
 ## Acceptance Checks
 
-From an authorized client, request `https://YOUR_DOMAIN/health`; expect `{"status":"ok"}` and a valid certificate. This is process liveness, not proof of database writes. Then complete the README's two-device flow and verify metadata through the authenticated device API. Confirm unauthorized requests receive 401 and an unowned device operation cannot succeed.
+From an authorized client, request `https://YOUR_DOMAIN/health`; expect `{"status":"ok"}` and a valid certificate. Then request `/ready`; expect `{"status":"ready","service":"personal-device-lab","apiVersion":1}` after a database connection check. A database outage must not pass the app's connection check. These probes are not proof of authenticated database writes. Complete the README's two-device flow and verify metadata through the authenticated device API. Confirm unauthorized requests receive 401 and an unowned device operation cannot succeed.
 
 Verify the DB/API ports are not public using approved cloud configuration review and authorized diagnostics, not unsolicited scanning. Test restart persistence and session revocation. Do not mark the connection complete until both real phones pass against the actual deployment.
 

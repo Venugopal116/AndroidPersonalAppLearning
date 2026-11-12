@@ -67,6 +67,7 @@ fun Application.foundation(service: IdentityService, limiter: RateLimiter = Rate
     })
     routing {
         get("/health") { call.respond(Health("ok")) }
+        get("/ready") { withContext(Dispatchers.IO) { call.respond(service.readiness()) } }
         route("/v1") {
             post("/auth/register") { withContext(Dispatchers.IO) { call.respond(HttpStatusCode.Created, service.register(call.body())) } }
             post("/auth/login") { withContext(Dispatchers.IO) { call.respond(service.login(call.body())) } }

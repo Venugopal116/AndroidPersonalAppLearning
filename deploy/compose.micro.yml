@@ -1,0 +1,13 @@
+services:
+  database:
+    mem_limit: 96m
+    command: ['postgres', '-c', 'shared_buffers=16MB', '-c', 'work_mem=1MB', '-c', 'max_connections=10']
+  backend:
+    mem_limit: 256m
+    pids_limit: 80
+    environment:
+      JAVA_TOOL_OPTIONS: -Xms24m -Xmx96m -XX:MaxMetaspaceSize=64m -XX:MaxDirectMemorySize=24m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=1 -Xss256k
+  proxy:
+    mem_limit: 48m
+    environment:
+      GOMEMLIMIT: 32MiB

@@ -44,3 +44,28 @@ workflows:
       - backend/build/reports/tests/test/**
       - backend/build/distributions/*.zip
       - gradle/wrapper/gradle-wrapper.jar
+  backend-image:
+    name: Personal Device Lab - OCI backend deployment archive
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      java: 17
+    cache:
+      cache_paths:
+        - ~/.gradle/caches
+        - ~/.gradle/wrapper
+    scripts:
+      - name: Bootstrap verified Gradle wrapper
+        script: bash scripts/bootstrap-wrapper.sh
+      - name: Test read-only deployment guards
+        script: python3 -B -m unittest discover -s tests -p test_preflight.py -v
+      - name: Test and package Linux backend image without Docker
+        script: bash gradlew -PbackendOnly :shared:test :backend:test :backend:jibBuildTar --no-daemon --stacktrace
+        test_report: backend/build/test-results/test/*.xml
+      - name: Create reviewed deployment archive
+        script: |
+          set -eu
+          tar -czf backend-deployment.tar.gz backend/build/jib-image.tar deploy/compose.yml deploy/compose.micro.yml deploy/Caddyfile deploy/.env.example deploy/preflight.py
+    artifacts:
+      - backend-deployment.tar.gz
+      - backend/build/reports/tests/test/**

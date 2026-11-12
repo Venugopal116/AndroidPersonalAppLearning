@@ -17,9 +17,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.personal.app.data.EndpointPolicy
+import dev.personal.app.data.ServerConnector
+import dev.personal.app.data.userMessage
 import dev.personal.app.device.DeviceMetadata
 import dev.personal.contracts.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.DateFormat
 import java.util.Date
 
@@ -32,18 +37,36 @@ import java.util.Date
 @Composable fun ServerSetup(onSave: (String) -> Unit) {
     var endpoint by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
+    var connecting by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val connector = remember { ServerConnector() }
     Surface(Modifier.fillMaxSize()) {
         Column(Modifier.safeDrawingPadding().padding(24.dp).widthIn(max = 640.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("Personal Device Lab", style = MaterialTheme.typography.headlineMedium)
             Text("Server", style = MaterialTheme.typography.titleLarge)
             OutlinedTextField(endpoint, { endpoint = it }, label = { Text("HTTPS server address") }, singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri), modifier = Modifier.fillMaxWidth())
+                enabled = !connecting, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri), modifier = Modifier.fillMaxWidth())
+            if (connecting) LinearProgressIndicator(Modifier.fillMaxWidth())
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             Button(onClick = {
-                val normalized = runCatching { EndpointPolicy.normalize(endpoint) }
-                normalized.onSuccess(onSave).onFailure { error = "Enter a valid HTTPS origin without a path, query or credentials." }
-            }) { Text("Connect") }
+                if (!connecting) {
+                    connecting = true
+                    error = null
+                    scope.launch {
+                        try {
+                            val verified = withContext(Dispatchers.IO) { connector.verify(endpoint) }
+                            onSave(verified)
+                        } catch (failure: CancellationException) {
+                            throw failure
+                        } catch (failure: Exception) {
+                            error = userMessage(failure)
+                        } finally {
+                            connecting = false
+                        }
+                    }
+                }
+            }, enabled = !connecting && endpoint.isNotBlank()) { Text(if (connecting) "Connecting" else "Connect") }
         }
     }
 }

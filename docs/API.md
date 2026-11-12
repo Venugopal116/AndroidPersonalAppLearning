@@ -7,6 +7,7 @@ Base URL: your HTTPS origin. All timestamps are UTC Unix milliseconds. JSON fiel
 | Method | Path | Authorization | Request | Response |
 | --- | --- | --- | --- | --- |
 | GET | `/health` | None | None | 200 `Health` (process liveness only) |
+| GET | `/ready` | None | None | 200 `Readiness` after a database connection check; 503 when the database is unavailable |
 | POST | `/v1/auth/register` | Registration invitation | `Credentials` | 201 `Tokens` |
 | POST | `/v1/auth/login` | Email/password | `Credentials` | 200 `Tokens` |
 | POST | `/v1/auth/refresh` | Refresh token in body | `RefreshRequest` | 200 rotated `Tokens` |
@@ -22,6 +23,8 @@ Base URL: your HTTPS origin. All timestamps are UTC Unix milliseconds. JSON fiel
 Use `Authorization: Bearer <access-token>` on protected endpoints. Send bodies with `Content-Type: application/json`. Body limit: 16 KiB. Responses set `Cache-Control: no-store`. Cross-origin browser access is not enabled; a future same-origin dashboard avoids token exposure through permissive CORS.
 
 ## Contracts
+
+`Readiness`: `status` must be `ready`, `service` must be `personal-device-lab`, and integer `apiVersion` must be `1` for the current Android connector. The endpoint exposes no account data or credentials and is subject to the same public-origin rate limits as health. It verifies database reachability, not every future feature or device authorization. The app probes it over trusted HTTPS without an Authorization header before saving a newly entered origin.
 
 `Credentials`: `email`, `password`, optional `registrationCode`. Registration requires the configured invitation, normalized unique email and a 12-128 character password. Login ignores `registrationCode`.
 

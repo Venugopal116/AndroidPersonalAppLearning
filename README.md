@@ -6,7 +6,9 @@ Personal Device Lab is an Android 13+ learning application for explicitly author
 
 Source and corresponding tests exist for account registration/login, expiring sessions, refresh rotation, device registration, device-scoped metadata synchronization, installation-bound one-time pairing, device revocation and account deletion. The Android app includes endpoint setup, authentication and device management screens with Material 3 light/dark themes. Native session storage uses Android Keystore AES-GCM.
 
-**Kotlin has not been compiled and Kotlin tests have not been executed in the restricted authoring environment. No APK has been generated and no connection to Oracle has been tested.** Only the dependency-free structural checks have run. Do not treat this as production-ready.
+**Foundation commit `d7bbf07` completed Codemagic build 3:** shared/backend JVM tests, Android unit tests/lint and a debug APK build passed, and the owner launched the app in preview. That is not live Oracle acceptance, physical-device certification or real PostgreSQL integration (skipped in the default workflow). No dependencies were installed on the restricted authoring computer.
+
+The next source milestone adds `/ready` database checks, Android server compatibility verification, a read-only VM preflight, an optional micro profile and a daemonless backend-image workflow. Its new Kotlin code and image packaging require a fresh Codemagic build. Six synthetic preflight policy tests passed locally. No backend has been deployed; there is still no live address to enter. Do not treat this as production-ready.
 
 The official Gradle wrapper JAR download was blocked by the local Zscaler policy. Launchers, wrapper properties, a pinned distribution checksum and official checksum-verifying bootstrap scripts are included. Codemagic runs the shell bootstrap on its build machine automatically; no local installation is required. The repository is not fully self-contained until the verified wrapper JAR is added. Do not bypass workplace network policy.
 
@@ -50,6 +52,12 @@ The APK uses a generated debug signing key, not a production release key. Differ
 
 Builds are manual to control usage. There is no automatic cloud deployment, no paid-service provisioning and no store publication. GitHub Actions remains manual-only to avoid duplicate automatic builds. Codemagic's default workflow does not provision PostgreSQL, so its real-engine integration test is skipped unless a disposable test database is configured separately. The optional GitHub backend workflow supplies that database. A successful cloud build is not proof of two-device operation or Oracle connectivity. See [docs/TESTING.md](docs/TESTING.md).
 
+### Backend Deployment Artifact
+
+Start the separate manual `backend-image` workflow when ready to validate backend packaging. It uses Jib to build a Linux/amd64 image for the existing x86_64 VM without Docker on the Mac builder. It requires network access to Gradle/base-image repositories but no Docker installation, registry login, Oracle credentials or signing keys. Review build minutes before starting.
+
+The resulting `backend-deployment.tar.gz` contains `backend/build/jib-image.tar`, reviewed Compose configurations, Caddy configuration, an example environment file and the read-only preflight script. It does not contain real credentials. Do not build the image on the 1 GB VM. Follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) before loading or starting anything.
+
 ## Optional Android Studio Setup
 
 1. Publish **this directory**, not the parent workspace, to the supplied GitHub destination `https://github.com/Venugopal116/AndroidPersonalAppLearning.git`. Confirm its visibility is Private and keep secrets out of Git. Configuring a local remote does not publish any files.
@@ -66,6 +74,8 @@ No OCI credential is required to build the APK. The app asks for the public HTTP
 The owner has successfully connected from Oracle Cloud Shell to the existing VM and wants to retain it. Read-only results reported on 2026-11-12: Ubuntu 20.04.6, no Ubuntu Pro attachment/ESM coverage, 952 MiB total RAM with about 504 MiB available, no swap, and approximately 42 GB free disk. A Telethon script is already running and must not be stopped, replaced or modified by this project.
 
 There is no domain yet. A free DNS subdomain may suit this learning deployment, subject to provider availability and terms. Reusing the VM is conditional on addressing its security coverage and measuring enough resource headroom. The supplied container memory limits total 736 MiB and have not been proven safe alongside the existing workload. Do not run that stack unchanged on the VM, restart it, upgrade it or add swap without an approved plan. Nothing in Codemagic deploys there. Follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) only after these gates are resolved.
+
+An optional `deploy/compose.micro.yml` lowers total caps to 400 MiB using `JAVA_TOOL_OPTIONS` for the Jib runtime. It is an unbenchmarked staging candidate, not proof the VM can run the system. Run `python3 deploy/preflight.py --json` inside the Ubuntu VM, not Cloud Shell, after transferring/reviewing the script through an authorized path. It reads OS/security status, available RAM/disk, listening ports and tool availability without printing secrets, changing settings, installing software or touching Telethon. Exit 2 lists blockers; exit 0 only allows further staging review. The previous 504 MiB available/no-ESM report fails the new 600 MiB minimum headroom/security checks.
 
 ## Build and Install
 
@@ -93,7 +103,7 @@ The JVM backend can build without Android SDK configuration:
 ## First End-to-End Test
 
 1. Deploy the backend following [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), with valid HTTPS and a strong server-only registration invitation.
-2. Launch the Android app and enter your HTTPS origin, for example `https://devices.example.com`. No paths, embedded credentials or query parameters are accepted.
+2. Deploy the updated backend and launch the updated Android app. Enter your HTTPS origin, for example `https://devices.example.com`. No paths, embedded credentials or query parameters are accepted. Connect now calls `/ready` without account credentials and saves the address only if the expected service/API version and database are ready. A URL alone or an older backend without this endpoint is not sufficient.
 3. Create an account with an email, a 12-128 character password and the invitation supplied privately by the server administrator. Email verification/password recovery are not implemented.
 4. Enter a device name and explicitly approve registration. Synchronize status and inspect the server's device list.
 5. Sign into the same account on the other phone. Its dashboard shows its installation UUID before enrollment.
@@ -132,7 +142,7 @@ Run the local, dependency-free structure check:
 
 It checks XML syntax, manifest privacy settings, catalog references, script syntax and test-suite presence. It **does not** validate Kotlin behavior. See [docs/TESTING.md](docs/TESTING.md) for unit, repository, HTTP, real PostgreSQL and device tests and [docs/API.md](docs/API.md) for endpoint contracts.
 
-CI installs/resolves its tools on external Codemagic runners (or optional manual GitHub-hosted runners), not this computer. CI has been authored but has not run yet. Enable GitHub secret scanning/push protection where available; CI is not a security certification.
+CI installs/resolves its tools on external Codemagic runners (or optional manual GitHub-hosted runners), not this computer. Foundation build 3 passed at `d7bbf07`; later source changes require their own cloud build. Run `python -B -m unittest discover -s tests -p test_preflight.py -v` for the standard-library deployment policy tests. Enable GitHub secret scanning/push protection where available; CI is not a security certification.
 
 ## Troubleshooting
 
@@ -148,4 +158,4 @@ CI installs/resolves its tools on external Codemagic runners (or optional manual
 | Container exits/OOM | Inspect memory/disk/CPU usage without dumping secrets. The 1 GB VM has no measured capacity guarantee. |
 | Device absent after reinstall | UUIDs/Keystore keys are installation-specific, not hardware identifiers. Re-register intentionally. |
 
-The GitHub destination is configured as `origin`; publication requires a successful Git push. No Oracle resource or remote configuration is created automatically. Remaining external gates are Codemagic/GitHub authorization, a DNS hostname, supported server security coverage and measured resource headroom. Keep passwords, SSH keys and OCI tokens out of chat and source control.
+The GitHub destination is configured as `origin`; confirm the published commit on `main` before starting each cloud build. Official GitHub HTTPS API publication is used when this environment's Git upload fails; no network controls are disabled. No Oracle resource or remote configuration is created automatically. Remaining external gates are the new cloud checks, a DNS hostname, supported server security coverage and measured resource headroom. Keep passwords, SSH keys and OCI tokens out of chat and source control.

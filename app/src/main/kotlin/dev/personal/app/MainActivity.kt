@@ -11,12 +11,6 @@ import dev.personal.app.data.*
 import dev.personal.app.device.DeviceMetadata
 import dev.personal.app.security.KeystoreSessionStore
 import dev.personal.app.ui.*
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
-import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,14 +22,7 @@ class MainActivity : ComponentActivity() {
         val sessions = KeystoreSessionStore(applicationContext)
         val metadata = DeviceMetadata(applicationContext)
         val model = if (endpoint.isNotBlank()) {
-            val client = OkHttpClient.Builder()
-                .followRedirects(false).followSslRedirects(false)
-                .connectTimeout(15, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS)
-                .callTimeout(40, TimeUnit.SECONDS).build()
-            val api = Retrofit.Builder().baseUrl(EndpointPolicy.normalize(endpoint)).client(client)
-                .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
-                .build().create(IdentityApi::class.java)
-            val repository = RemoteDeviceRepository(api, sessions)
+            val repository = RemoteDeviceRepository(createIdentityApi(endpoint), sessions)
             ViewModelProvider(this, object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T = FoundationViewModel(repository) as T

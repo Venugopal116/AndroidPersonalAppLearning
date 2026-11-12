@@ -12,6 +12,14 @@ import org.junit.Test
 import java.util.UUID
 
 class ApiTest {
+    @Test fun readinessChecksDatabaseAndIdentifiesApi() = testApplication {
+        val service = IdentityService(Database("jdbc:h2:mem:${UUID.randomUUID()};MODE=PostgreSQL;DB_CLOSE_DELAY=-1", "sa", ""), "test-invite")
+        application { foundation(service) }
+        val response = client.get("/ready")
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("no-store", response.headers[HttpHeaders.CacheControl])
+        assertEquals(Readiness("ready", "personal-device-lab", 1), Json.decodeFromString<Readiness>(response.bodyAsText()))
+    }
     @Test fun registrationAuthenticationValidationAndDeletion() = testApplication {
         val service = IdentityService(Database("jdbc:h2:mem:${UUID.randomUUID()};MODE=PostgreSQL;DB_CLOSE_DELAY=-1", "sa", ""), "test-invite")
         application { foundation(service) }

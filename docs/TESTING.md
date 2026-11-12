@@ -4,11 +4,15 @@
 
 During source authoring, `scripts/verify-structure.ps1` passed. It parses XML, checks normal-only manifest permissions, backup/cleartext settings, Gradle catalog references, PowerShell syntax, expected project files and test-suite presence. Editor diagnostics returned no reported errors, which does not establish Kotlin compiler support or correctness.
 
-The Gradle wrapper download failed because of Zscaler policy. No package/dependency was installed. Kotlin compilation, all Kotlin test execution, Android lint, container validation, live application-to-OCI connectivity, memory benchmarks and physical-device tests have **not run**. Codemagic and optional manual GitHub Actions workflows have been written, not executed. The owner's successful SSH connection and OS/memory/disk checks are not an application connectivity test. These remain release blockers.
+The local Gradle wrapper download failed because of Zscaler policy. No package/dependency was installed locally. The owner supplied a successful Codemagic build 3 screenshot at `d7bbf07`: shared/backend JVM tests, Android unit tests/lint and debug APK compilation finished, and the app launched in preview. Real PostgreSQL integration is skipped in the default workflow; instrumentation, container/image validation, live application-to-OCI connectivity, memory benchmarks and physical-device tests remain pending. A successful SSH connection is not an application connectivity test.
+
+The subsequent milestone adds readiness/connector tests and Jib packaging and is not covered by that older green build. Six standard-library preflight tests passed locally, covering recognized security support, the existing VM's ESM/RAM failures, occupied/unknown ports, missing tooling/disk and support expiry. Run them with `python -B -m unittest discover -s tests -p test_preflight.py -v`. No real VM was queried or changed by those fixture tests.
 
 ## Codemagic: Primary Execution Path
 
-Connect the repository through GitHub in the browser, select `main` and manually start `android-foundation` from the root `codemagic.yaml`. Review machine entitlement/build minutes first. There are no signing, Oracle or SSH secrets required for this debug workflow. It runs shared/backend JVM tests and Android unit tests/lint, then builds an APK and backend ZIP. JUnit reports and test HTML reports are exposed as build results/artifacts. The shell bootstrap is syntax-checked locally; execution and remote configuration acceptance remain pending until the first cloud build.
+The first Codemagic build of commit `25eb79b` stopped at SDK setup because `sdkmanager` was not on PATH. The owner's browser-edited SDK discovery and the explicit Ktor logging receiver fix were validated by the successful build at `d7bbf07`. That working SDK block is preserved. Additional SDK-helper fixture tests run without downloading packages; `bash scripts/test-configure-android-sdk.sh` passed locally. The current milestone still requires a new build because it changes Kotlin and image packaging after that success.
+
+Connect the repository through GitHub in the browser, select `main` and manually start `android-foundation` from the root `codemagic.yaml`. Review machine entitlement/build minutes first. There are no signing, Oracle or SSH secrets required for this debug workflow. It runs shared/backend JVM tests and Android unit tests/lint, then builds an APK and backend ZIP. JUnit reports and test HTML reports are exposed as build results/artifacts. The separate manual `backend-image` workflow runs deployment guard tests and JVM tests, then builds a Linux/amd64 image with Jib and packages the deployment archive. It needs no Docker daemon on the Mac and has not run yet. Verify image load/start, `/ready`, persistence and actual resource use in an isolated staging environment before coexistence on the Telethon VM.
 
 The default Codemagic workflow does not provision a disposable PostgreSQL instance; `PostgresIntegrationTest` is therefore skipped unless its test environment variables are supplied securely against a disposable database. Do not point it at the Telethon VM or any live database. The retained manual GitHub backend workflow runs PostgreSQL integration on its own disposable service. Device instrumentation, resource measurement and real HTTPS acceptance remain separate gates even after a green Codemagic build.
 
@@ -18,9 +22,9 @@ The default Codemagic workflow does not provision a disposable PostgreSQL instan
 | --- | --- |
 | Shared `ContractsTest` | UUID, field, battery and connectivity validation |
 | Backend `IdentityServiceTest` | Login, invitation, expiry, refresh replay, logout, owner isolation, scoped heartbeat, revocation, pairing binding/expiry/replay, deletion, token/password digests and rate limits |
-| Backend `ApiTest` | HTTP registration/enrollment/heartbeat/deletion, unauthorized access, malformed/oversized bodies and throttling |
+| Backend `ApiTest` | HTTP registration/enrollment/heartbeat/deletion, unauthorized access, malformed/oversized bodies, throttling and the new database/service readiness contract |
 | Backend `PostgresIntegrationTest` | Actual PostgreSQL persistence, session revocation and cleanup |
-| Android `RemoteDeviceRepositoryTest` | MockWebServer refresh/retry, authorization headers, revoked refresh, logout cleanup and HTTPS-origin validation |
+| Android `RemoteDeviceRepositoryTest` | MockWebServer refresh/retry, authorization headers, revoked refresh, logout cleanup, HTTPS-origin validation and new readiness/compatibility/error checks |
 | Android `FoundationViewModelTest` | Busy guard, sign-in/sign-out state and recoverable network errors |
 | Android `KeystoreSessionStoreTest` | On-device persistence, encrypted record, tamper rejection and clearing |
 

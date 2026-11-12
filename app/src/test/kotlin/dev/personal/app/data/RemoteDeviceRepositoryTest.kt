@@ -20,6 +20,36 @@ class RemoteDeviceRepositoryTest {
     }
     private fun api(server: MockWebServer) = Retrofit.Builder().baseUrl(server.url("/"))
         .addConverterFactory(Json.asConverterFactory("application/json".toMediaType())).build().create(IdentityApi::class.java)
+    @Test fun serverConnectorVerifiesReadinessWithoutSendingCredentials() = runTest {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setHeader("Content-Type", "application/json")
+                .setBody(Json.encodeToString(Readiness("ready", "personal-device-lab", 1))))
+            val connector = ServerConnector { api(server) }
+            assertEquals("https://devices.example.com/", connector.verify("https://devices.example.com"))
+            val request = server.takeRequest()
+            assertEquals("/ready", request.path)
+            assertNull(request.getHeader("Authorization"))
+        }
+    }
+    @Test fun serverConnectorRejectsWrongApiAndUnreadyServers() = runTest {
+        MockWebServer().use { server ->
+            val connector = ServerConnector { api(server) }
+            listOf(Readiness("ready", "other-service", 1), Readiness("ready", "personal-device-lab", 2),
+                Readiness("starting", "personal-device-lab", 1)).forEach { response ->
+                server.enqueue(MockResponse().setHeader("Content-Type", "application/json").setBody(Json.encodeToString(response)))
+                try { connector.verify("https://devices.example.com"); fail("Incompatible server accepted") }
+                catch (_: IllegalArgumentException) { }
+            }
+            server.enqueue(MockResponse().setResponseCode(503))
+            try { connector.verify("https://devices.example.com"); fail("Unavailable server accepted") }
+            catch (failure: retrofit2.HttpException) { assertEquals(503, failure.code()) }
+        }
+    }
+    @Test fun serverConnectorRejectsHttpBeforeCreatingAnApi() = runTest {
+        val connector = ServerConnector { error("No API should be created for an HTTP origin") }
+        try { connector.verify("http://devices.example.com"); fail("HTTP accepted") }
+        catch (_: IllegalArgumentException) { }
+    }
     @Test fun expiredAccessTokenRefreshesOnceAndRetries() = runTest {
         MockWebServer().use { server ->
             val sessions = MemorySessions(Tokens("old-access", "old-refresh", 0))
