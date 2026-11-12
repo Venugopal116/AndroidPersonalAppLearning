@@ -4,7 +4,13 @@
 
 During source authoring, `scripts/verify-structure.ps1` passed. It parses XML, checks normal-only manifest permissions, backup/cleartext settings, Gradle catalog references, PowerShell syntax, expected project files and test-suite presence. Editor diagnostics returned no reported errors, which does not establish Kotlin compiler support or correctness.
 
-The Gradle wrapper download failed because of Zscaler policy. No package/dependency was installed. Kotlin compilation, all Kotlin test execution, Android lint, container validation, live OCI connectivity, memory benchmarks and physical-device tests have **not run**. GitHub Actions has been written, not executed. These remain release blockers.
+The Gradle wrapper download failed because of Zscaler policy. No package/dependency was installed. Kotlin compilation, all Kotlin test execution, Android lint, container validation, live application-to-OCI connectivity, memory benchmarks and physical-device tests have **not run**. Codemagic and optional manual GitHub Actions workflows have been written, not executed. The owner's successful SSH connection and OS/memory/disk checks are not an application connectivity test. These remain release blockers.
+
+## Codemagic: Primary Execution Path
+
+Connect the repository through GitHub in the browser, select `main` and manually start `android-foundation` from the root `codemagic.yaml`. Review machine entitlement/build minutes first. There are no signing, Oracle or SSH secrets required for this debug workflow. It runs shared/backend JVM tests and Android unit tests/lint, then builds an APK and backend ZIP. JUnit reports and test HTML reports are exposed as build results/artifacts. The shell bootstrap is syntax-checked locally; execution and remote configuration acceptance remain pending until the first cloud build.
+
+The default Codemagic workflow does not provision a disposable PostgreSQL instance; `PostgresIntegrationTest` is therefore skipped unless its test environment variables are supplied securely against a disposable database. Do not point it at the Telethon VM or any live database. The retained manual GitHub backend workflow runs PostgreSQL integration on its own disposable service. Device instrumentation, resource measurement and real HTTPS acceptance remain separate gates even after a green Codemagic build.
 
 ## Automated Test Sources
 

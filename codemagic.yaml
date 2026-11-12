@@ -1,0 +1,37 @@
+workflows:
+  android-foundation:
+    name: Personal Device Lab - debug APK and backend checks
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      java: 17
+    cache:
+      cache_paths:
+        - ~/.gradle/caches
+        - ~/.gradle/wrapper
+    scripts:
+      - name: Bootstrap verified Gradle wrapper
+        script: bash scripts/bootstrap-wrapper.sh
+      - name: Configure Android SDK
+        script: |
+          set -eu
+          SDK_PATH="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+          test -n "$SDK_PATH"
+          printf 'sdk.dir=%s\n' "$SDK_PATH" > local.properties
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Shared and backend tests
+        script: bash gradlew -PbackendOnly :shared:test :backend:test :backend:distZip --no-daemon --stacktrace
+        test_report: backend/build/test-results/test/*.xml
+      - name: Android unit tests and lint
+        script: bash gradlew :app:testDebugUnitTest :app:lintDebug --no-daemon --stacktrace
+        test_report: app/build/test-results/testDebugUnitTest/*.xml
+      - name: Build debug APK
+        script: bash gradlew :app:assembleDebug --no-daemon --stacktrace
+    artifacts:
+      - app/build/outputs/apk/debug/*.apk
+      - app/build/reports/lint-results-debug.html
+      - app/build/reports/tests/testDebugUnitTest/**
+      - shared/build/reports/tests/test/**
+      - backend/build/reports/tests/test/**
+      - backend/build/distributions/*.zip
+      - gradle/wrapper/gradle-wrapper.jar

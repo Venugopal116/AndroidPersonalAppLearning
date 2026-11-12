@@ -5,7 +5,7 @@ Status terminology: **source present** means code/tests have been authored; **ve
 | Phase | Deliverable | Current status |
 | --- | --- | --- |
 | 1 | Architecture, Android limitations, OCI evaluation, API/schema plan | Documented; tenancy/security decisions still require operator confirmation |
-| 2 | Fresh project, centralized versions, wrapper, CI and documentation | Source present; official wrapper binary blocked locally; build/sync/CI pending |
+| 2 | Fresh project, centralized versions, wrapper, CI and documentation | Source present; Codemagic browser-first workflow added; verified wrapper bootstraps on CI, cloud execution pending |
 | 3 | Auth, devices, pairing, revocation, manual HTTPS metadata round trip | Source and tests present; execution, deployment and real round trip pending |
 | 4 | Central permission states/rationales/denial/settings dashboard | Pending; only normal network permissions declared now |
 | 5 | Opt-in location, encrypted history, start/pause/stop, configurable synchronization | Pending; inexact background scheduling and OS grants required |
@@ -19,9 +19,9 @@ Status terminology: **source present** means code/tests have been authored; **ve
 
 ## Next Acceptance Gate
 
-1. Bootstrap and commit the verified official wrapper from an authorized environment.
-2. Publish the separate repository and run CI, fixing any compiler/test/lint findings before deployment.
-3. Confirm supported server security coverage, DNS, approved ingress, backups and resource capacity.
+1. Publish to the supplied GitHub repository and authorize only that repository in Codemagic.
+2. Run the manual `android-foundation` workflow, which bootstraps the verified wrapper externally; fix any compiler/test/lint findings before deployment and vendor the verified JAR when available.
+3. Retain the existing VM/Telethon workload; address absent ESM coverage, DNS, approved ingress, backups and measured resource headroom before any deployment or server change.
 4. Deploy the backend and complete the two-phone HTTPS flow.
 5. Record test evidence and commit the accepted foundation before adding sensor permissions.
 

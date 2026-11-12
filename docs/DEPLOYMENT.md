@@ -1,6 +1,14 @@
 # Deploying the Foundation to OCI
 
-These are operator instructions, not commands executed on your server. No SSH connection has been attempted. Never provide private keys, passwords, invites, access tokens or OCI configuration files in chat or Git.
+These are operator instructions, not commands executed by this assistant on your server. The owner has connected through Oracle Cloud Shell and supplied read-only results. Never provide private keys, passwords, invites, access tokens or OCI configuration files in chat or Git.
+
+## Existing VM: Preserve the Current Workload
+
+The selected host is the existing Hyderabad E2 micro VM. The user wants to reuse it, not recreate it. It runs a Telethon script that this project must not stop, inspect for credentials, update or otherwise alter. SSH results from 2026-11-12 confirm Ubuntu 20.04.6, no active Ubuntu Pro subscription/ESM, 952 MiB RAM total, about 504 MiB available, no swap and about 42 GB free on `/`.
+
+**Do not run the deployment commands below yet.** The current container caps total 736 MiB, exceeding that observed available RAM, and are not reserved memory or a safe-capacity estimate. Collect peak resource use and inventory already installed Java, PostgreSQL, proxy and container tooling without changing anything. Then design and validate a smaller coexistence plan, or use approved separate infrastructure if the VM cannot safely support it. Never silently replace PostgreSQL with an in-memory production store to make it fit.
+
+The existing OS can be retained only with an approved security-maintenance plan; Ubuntu Pro eligibility/ESM activation and applying fixes require operator review. Do not run package upgrades, reboot, provision another VM, enable paid services or add swap without explicit approval and a recovery plan for the existing workload. Codemagic only produces artifacts and has no SSH/deployment credentials.
 
 ## Prerequisites and Approval Gates
 
@@ -13,14 +21,14 @@ These are operator instructions, not commands executed on your server. No SSH co
 
 ## Build Away From the Micro VM
 
-Use Android Studio's authorized machine or CI. Do not compile Kotlin or build Gradle dependencies on the 1 GB server.
+Use the Codemagic `android-foundation` workflow for the backend distribution ZIP and Android debug APK. Do not compile Kotlin or build Gradle dependencies on the 1 GB server. The following local commands are optional for a separate, authorized build host, not prerequisites on the restricted computer:
 
 ```powershell
 .\gradlew.bat -PbackendOnly :shared:test :backend:test :backend:installDist
 docker build -f deploy/Dockerfile -t personal-device-backend:0.1.0 .
 ```
 
-The Docker command requires an approved build host with Docker; it is not a requirement for building the Android app. Transfer the resulting image through an approved private registry or image archive. The GitHub workflow uploads the JVM distribution but does not publish an image or deploy automatically. No registry credentials are supplied.
+The Docker command requires an approved build host with Docker; it is not a requirement for building the Android app. Transfer the resulting image through an approved private registry or image archive. Codemagic provides a distribution ZIP; the optional GitHub workflow uploads the JVM distribution directory. Neither publishes an image nor deploys automatically. No registry credentials are supplied. A non-container service deployment would require a separately reviewed resource/permissions configuration; none has been validated yet.
 
 Review current security updates and pin reviewed image digests before a production deployment. The readable major-version tags in Compose are a learning baseline, not immutable supply-chain locks.
 
