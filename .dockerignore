@@ -1,0 +1,6 @@
+**
+!backend/
+!backend/build/
+!backend/build/install/
+!backend/build/install/backend/
+!backend/build/install/backend/**

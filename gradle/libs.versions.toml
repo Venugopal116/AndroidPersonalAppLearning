@@ -1,0 +1,51 @@
+[versions]
+agp = "8.9.2"
+kotlin = "2.1.20"
+serialization = "1.8.1"
+coroutines = "1.10.2"
+ktor = "3.1.2"
+compose-bom = "2025.04.01"
+lifecycle = "2.9.0"
+activity = "1.10.1"
+retrofit = "2.11.0"
+okhttp = "4.12.0"
+junit = "4.13.2"
+postgres = "42.7.5"
+h2 = "2.3.232"
+logback = "1.5.18"
+
+[libraries]
+serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-ui = { module = "androidx.compose.ui:ui" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-icons = { module = "androidx.compose.material:material-icons-core" }
+compose-test = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
+lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "retrofit" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
+ktor-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-content = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+ktor-json = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
+ktor-status = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
+ktor-test = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
+postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+junit = { module = "junit:junit", version.ref = "junit" }
+android-test-runner = { module = "androidx.test:runner", version = "1.6.2" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
