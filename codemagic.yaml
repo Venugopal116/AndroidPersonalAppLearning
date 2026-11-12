@@ -17,8 +17,17 @@ workflows:
           set -eu
           SDK_PATH="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
           test -n "$SDK_PATH"
+          test -d "$SDK_PATH"
+          SDKMANAGER="$SDK_PATH/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$SDK_PATH" -type f -name sdkmanager -print -quit)"
+          fi
+          if [ -z "$SDKMANAGER" ] || [ ! -x "$SDKMANAGER" ]; then
+            echo "Android SDK command-line tools were not found."
+            exit 1
+          fi
+          "$SDKMANAGER" --sdk_root="$SDK_PATH" "platforms;android-35" "build-tools;35.0.0"
           printf 'sdk.dir=%s\n' "$SDK_PATH" > local.properties
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - name: Shared and backend tests
         script: bash gradlew -PbackendOnly :shared:test :backend:test :backend:distZip --no-daemon --stacktrace
         test_report: backend/build/test-results/test/*.xml
