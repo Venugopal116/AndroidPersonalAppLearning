@@ -2,6 +2,8 @@
 
 Personal Device Lab is an Android 13+ learning application for explicitly authorized personal-device management. This is a fresh, independent project; no code or configuration from the parent Android project is reused.
 notes:   https://129-225-75-12.nip.io/ready
+
+https://129-225-75-12.nip.io/ready
 ## Status: foundation source, not a verified release
 
 Source and corresponding tests exist for account registration/login, expiring sessions, refresh rotation, device registration, device-scoped metadata synchronization, installation-bound one-time pairing, device revocation and account deletion. The Android app includes endpoint setup, authentication and device management screens with Material 3 light/dark themes. Native session storage uses Android Keystore AES-GCM.
