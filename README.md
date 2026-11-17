@@ -7,17 +7,19 @@ https://129-225-75-12.nip.io/ready
 
 https://129-225-75-12.nip.io
 
-## Status: foundation source, not a verified release
+## Status: live learning foundation, permission center source
 
 Source and corresponding tests exist for account registration/login, expiring sessions, refresh rotation, device registration, device-scoped metadata synchronization, installation-bound one-time pairing, device revocation and account deletion. The Android app includes endpoint setup, authentication and device management screens with Material 3 light/dark themes. Native session storage uses Android Keystore AES-GCM.
 
 **Foundation commit `d7bbf07` completed Codemagic build 3:** shared/backend JVM tests, Android unit tests/lint and a debug APK build passed, and the owner launched the app in preview. That is not live Oracle acceptance, physical-device certification or real PostgreSQL integration (skipped in the default workflow). No dependencies were installed on the restricted authoring computer.
 
-The next source milestone adds `/ready` database checks, Android server compatibility verification, a read-only VM preflight, an optional micro profile and a daemonless backend-image workflow. Its new Kotlin code and image packaging require a fresh Codemagic build. Six synthetic preflight policy tests passed locally. No backend has been deployed; there is still no live address to enter. Do not treat this as production-ready.
+The owner subsequently built/deployed `6fac19c` on the existing OCI VM: PostgreSQL, the non-root Linux/amd64 Jib image and Caddy's trusted HTTPS endpoint are running. `/ready` returned HTTP 200 publicly. Registration/enrollment worked in Codemagic/Appetize preview; the owner confirmed Vivo V27 synchronization, session retention, both device listings and a working Telethon bot on 2026-11-17. This is one physical phone plus a preview, not two physical phones. Manual revocation was intentionally deferred to retain the preview session; pairing, destructive deletion and sustained-load acceptance remain open. No dependencies were installed on the restricted authoring computer.
+
+Android version `0.2.0` adds the local permission center described in [docs/PERMISSIONS.md](docs/PERMISSIONS.md). Its new Kotlin unit tests, compilation/lint and runtime permission acceptance require a fresh `android-foundation` build and device checks. It does not change the backend or invalidate existing sessions. Do not treat this learning deployment as production-ready.
 
 The official Gradle wrapper JAR download was blocked by the local Zscaler policy. Launchers, wrapper properties, a pinned distribution checksum and official checksum-verifying bootstrap scripts are included. Codemagic runs the shell bootstrap on its build machine automatically; no local installation is required. The repository is not fully self-contained until the verified wrapper JAR is added. Do not bypass workplace network policy.
 
-Camera, microphone, location, permission-management UI, WorkManager, Room history, contacts, SMS imports, media transfers, remote requests, Oracle Object Storage and web administration are **not implemented**. They have no placeholder screens pretending to work. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Camera capture, microphone recording, location collection, WorkManager, Room history, contacts, SMS imports, media transfers, remote requests, Oracle Object Storage and web administration are **not implemented**. The permission center manages Android grants only; granting access starts no sensor or transfer. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Architecture
 
@@ -78,9 +80,11 @@ No OCI credential is required to build the APK. The app asks for the public HTTP
 
 The owner has successfully connected from Oracle Cloud Shell to the existing VM and wants to retain it. Read-only results reported on 2026-11-12: Ubuntu 20.04.6, no Ubuntu Pro attachment/ESM coverage, 952 MiB total RAM with about 504 MiB available, no swap, and approximately 42 GB free disk. A Telethon script is already running and must not be stopped, replaced or modified by this project.
 
-There is no domain yet. A free DNS subdomain may suit this learning deployment, subject to provider availability and terms. Reusing the VM is conditional on addressing its security coverage and measuring enough resource headroom. The supplied container memory limits total 736 MiB and have not been proven safe alongside the existing workload. Do not run that stack unchanged on the VM, restart it, upgrade it or add swap without an approved plan. Nothing in Codemagic deploys there. Follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) only after these gates are resolved.
+A free IP-based DNS hostname now resolves to the retained VM, and Caddy obtained a production Let's Encrypt certificate after the owner added stateful OCI TCP 80/443 ingress. Only the proxy ports are public. The micro override was started in stages and returned real database/API readiness. The owner confirmed Telethon still works; its code, Python environment and startup configuration were not intentionally changed. Sustained resource use, recovery and backup restoration are not certified. Never start the default 736 MiB profile on this constrained VM unchanged.
 
 An optional `deploy/compose.micro.yml` lowers total caps to 400 MiB using `JAVA_TOOL_OPTIONS` for the Jib runtime. It is an unbenchmarked staging candidate, not proof the VM can run the system. Run `python3 deploy/preflight.py --json` inside the Ubuntu VM, not Cloud Shell, after transferring/reviewing the script through an authorized path. It reads OS/security status, available RAM/disk, listening ports and tool availability without printing secrets, changing settings, installing software or touching Telethon. Exit 2 lists blockers; exit 0 only allows further staging review. The previous 504 MiB available/no-ESM report fails the new 600 MiB minimum headroom/security checks.
+
+The owner could not create an Ubuntu Pro account and explicitly accepted proceeding without ESM for this learning environment. Ubuntu 20.04 standard security coverage ended in May 2025; the risk remains and the preflight policy was not weakened. An already-running deployment also occupies ports 80/443, so this initial-host preflight is not a running-stack health check. Retaining the VM is the owner's constraint, not a supported/patched production baseline.
 
 ## Build and Install
 
@@ -121,17 +125,17 @@ Metadata synchronization is manual in this milestone. "Recently seen" means a he
 
 ## Oracle Cloud
 
-The supplied screenshots show an Ubuntu 20.04 `VM.Standard.E2.1.Micro` VM in Hyderabad, 1 GB RAM, a 47 GB boot volume and no extra block volumes. The subsequent SSH session confirms OS, available memory/disk and lack of ESM coverage. Public HTTPS readiness, free-tier billing eligibility and safe capacity for the new backend remain unverified.
+The supplied screenshots show an Ubuntu 20.04 `VM.Standard.E2.1.Micro` VM in Hyderabad, 1 GB RAM, a 47 GB boot volume and no extra block volumes. The subsequent SSH session confirms OS, available memory/disk and lack of ESM coverage. Public HTTPS and the Vivo metadata round trip are verified by owner evidence; free-tier billing eligibility and safe peak-load capacity are not.
 
 Use this VM only as a constrained two-device learning deployment after security/support and capacity checks. Ubuntu 20.04 standard support has ended; use approved extended security coverage or provision a supported LTS replacement. Do not perform an unattended in-place upgrade or destroy existing workloads.
 
-The proposed deployment uses a single bounded JVM process, PostgreSQL and Caddy, pending the existing-VM compatibility gates above. Builds happen on Codemagic, not on the micro VM. The DB and API ports are not published. Private Object Storage and instance-principal IAM will be added in the media phase; there is no reason to collect OCI keys now.
+The learning deployment uses a single bounded JVM process, PostgreSQL and Caddy. Builds happen on Codemagic, not on the micro VM. The DB and API ports are not published. Private Object Storage and instance-principal IAM will be added in the media phase; there is no reason to collect OCI keys now.
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for costs, tradeoffs and security boundaries. Free-tier limits and region capacity must be confirmed in your own console before provisioning; zero cost and uptime cannot be guaranteed.
 
 ## Permissions and Privacy
 
-This foundation declares only `INTERNET` and `ACCESS_NETWORK_STATE`, both normal permissions. It accesses no location, camera, microphone, contacts, SMS, Bluetooth or user files. Passwords and pairing invitations are not saved. Tokens are encrypted under a non-exportable Keystore key; backups/transfers are excluded and screen capture is disabled for this app window.
+The app declares normal `INTERNET`/`ACCESS_NETWORK_STATE` permissions plus optional runtime camera, microphone, coarse/fine foreground location and notification permissions. The toolbar's shield icon opens the local permission center; every request requires an explicit tap and explanation. Denial does not block account or metadata workflows, approximate access is distinct from precise access, and grants are reread on resume. There is no background-location, foreground-service, contacts, SMS, Bluetooth or broad-storage permission. No sensor is read, recorded or uploaded by this milestone. Passwords and pairing invitations are not saved. Tokens are encrypted under a non-exportable Keystore key; backups/transfers are excluded and screen capture is disabled for this app window.
 
 Device names, installation UUIDs, model/OS information, battery and connectivity metadata are sent only to the configured server after enrollment/synchronization. Account deletion removes active database records via cascading foreign keys; backup expiry is an operator responsibility. Server logs must never include authorization headers, secrets or request bodies.
 
@@ -163,4 +167,4 @@ CI installs/resolves its tools on external Codemagic runners (or optional manual
 | Container exits/OOM | Inspect memory/disk/CPU usage without dumping secrets. The 1 GB VM has no measured capacity guarantee. |
 | Device absent after reinstall | UUIDs/Keystore keys are installation-specific, not hardware identifiers. Re-register intentionally. |
 
-The GitHub destination is configured as `origin`; confirm the published commit on `main` before starting each cloud build. Official GitHub HTTPS API publication is used when this environment's Git upload fails; no network controls are disabled. No Oracle resource or remote configuration is created automatically. Remaining external gates are the new cloud checks, a DNS hostname, supported server security coverage and measured resource headroom. Keep passwords, SSH keys and OCI tokens out of chat and source control.
+The GitHub destination is configured as `origin`; confirm the published commit on `main` before starting each cloud build. Official GitHub HTTPS API publication is used when this environment's Git upload fails; no network controls are disabled. No Oracle resource or remote configuration is created automatically. Remaining gates include the permission build/device checks, supported server security coverage, sustained resource measurements, backups and deferred destructive acceptance tests. Keep passwords, SSH keys and OCI tokens out of chat and source control.

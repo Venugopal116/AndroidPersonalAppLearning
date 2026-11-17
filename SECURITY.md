@@ -1,6 +1,6 @@
 # Security and Privacy
 
-This is unverified foundation source for a personal-device learning project, not a production-certified management agent. Never deploy with example secrets or place sensitive real data in an unvalidated environment.
+This is a personal-device learning project, not a production-certified management agent. Owner evidence verifies selected live identity/device flows; new permission code still requires cloud/device validation. Never deploy with example secrets or mistake a successful happy path for a security certification.
 
 ## Reporting
 
@@ -15,6 +15,7 @@ Do not publish vulnerabilities, credentials, private device metadata or database
 - Salted PBKDF2-HMAC-SHA256 passwords and invitation-gated account creation.
 - Bounded JSON bodies, rate limits, SQL parameters and generic internal errors.
 - Android Keystore AES-GCM token storage, backup/transfer exclusions, HTTP/redirect rejection and screen-capture protection.
+- Local-only permission center with explicit explanations, user-initiated runtime requests, approximate/precise separation, denial/settings handling and current grants reread on resume. Permission grants alone start no collection; no background-location, foreground-service, contacts, SMS or broad-storage permission is declared.
 - Private DB/API container ports, non-root/read-only API runtime and public TLS proxy.
 - Active-database account deletion and bounded successful-action audit records.
 
@@ -33,6 +34,8 @@ Account deletion removes live rows. Separate encrypted backups must expire on th
 ## Mandatory Deployment Gates
 
 Use a supported/patched OS, trusted TLS, reviewed dependencies/images, least-privilege administration, private storage, tested backup restoration and verified ownership/revocation tests. Keep the 1 GB VM's actual resource consumption under review. Ubuntu 20.04 without approved extended security coverage is not an acceptable production baseline.
+
+The owner retained an Ubuntu 20.04/no-ESM VM and explicitly accepted the risk for this learning deployment when creating a Pro account was unavailable. Standard coverage ended in May 2025. This exception is not a production approval and does not change preflight results. Live manual revocation was deferred to retain a preview session; do not report that acceptance gate as passed.
 
 Never install a network/certificate bypass to make a build succeed. The local wrapper download was policy-blocked; obtain it only through approved development/CI environments and verify official checksums.
 

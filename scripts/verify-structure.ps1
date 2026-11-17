@@ -19,8 +19,15 @@ Get-ChildItem $root -Filter '*.xml' -Recurse | ForEach-Object {
 $manifest = [xml](Get-Content (Join-Path $root 'app/src/main/AndroidManifest.xml') -Raw)
 $namespace = 'http://schemas.android.com/apk/res/android'
 $permissions = @($manifest.manifest.'uses-permission' | ForEach-Object { $_.GetAttribute('name', $namespace) })
-if ($permissions.Count -ne 2 -or $permissions -notcontains 'android.permission.INTERNET' -or
-    $permissions -notcontains 'android.permission.ACCESS_NETWORK_STATE') { throw 'Unexpected foundation permissions' }
+$expectedPermissions = @('android.permission.INTERNET', 'android.permission.ACCESS_NETWORK_STATE',
+    'android.permission.CAMERA', 'android.permission.RECORD_AUDIO',
+    'android.permission.ACCESS_COARSE_LOCATION', 'android.permission.ACCESS_FINE_LOCATION',
+    'android.permission.POST_NOTIFICATIONS')
+if ($permissions.Count -ne $expectedPermissions.Count -or
+    @(Compare-Object $expectedPermissions $permissions).Count -ne 0) { throw 'Unexpected permission-center declarations' }
+foreach ($feature in $manifest.manifest.'uses-feature') {
+    if ($feature.GetAttribute('required', $namespace) -ne 'false') { throw 'Learning capabilities must be optional hardware' }
+}
 if ($manifest.manifest.application.GetAttribute('allowBackup', $namespace) -ne 'false' -or
     $manifest.manifest.application.GetAttribute('usesCleartextTraffic', $namespace) -ne 'false') {
     throw 'Backup or cleartext policy is not fail-closed'
@@ -48,9 +55,9 @@ Get-ChildItem $PSScriptRoot -Filter '*.ps1' | ForEach-Object {
     if ($errors.Count -gt 0) { throw "PowerShell syntax error in $($_.Name): $errors" }
 }
 $tests = @(Get-ChildItem $root -Filter '*Test.kt' -Recurse)
-if ($tests.Count -lt 7) { throw 'Expected foundation test suites are missing' }
+if ($tests.Count -lt 8) { throw 'Expected foundation and permission test suites are missing' }
 Write-Output "PASS: structure, XML, permission/backup/network policy, catalog references, PowerShell syntax; $($tests.Count) Kotlin test suites present."
 if (-not (Test-Path (Join-Path $root 'gradle/wrapper/gradle-wrapper.jar'))) {
     Write-Output 'OPEN GATE: official wrapper JAR download blocked locally. Bootstrap in an authorized environment before CLI builds.'
 }
-Write-Output 'Kotlin compilation, unit/integration/instrumentation execution and cloud deployment remain unverified.'
+Write-Output 'Offline structure checks do not compile Kotlin or execute Kotlin/device tests. See docs/TESTING.md for cloud and device evidence.'

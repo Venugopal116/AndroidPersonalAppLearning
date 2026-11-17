@@ -2,11 +2,19 @@
 
 These are operator instructions, not commands executed by this assistant on your server. The owner has connected through Oracle Cloud Shell and supplied read-only results. Never provide private keys, passwords, invites, access tokens or OCI configuration files in chat or Git.
 
+## Recorded Learning Deployment: 2026-11-17
+
+The owner installed Ubuntu-provided Docker/Compose and loaded the `6fac19c` Jib archive into a dedicated staging directory. PostgreSQL96 MiB, API256 MiB and Caddy48 MiB caps were applied using both Compose files and project name `personal-device-lab`. Real database readiness, trusted public HTTPS, preview enrollment, physical Vivo V27 status synchronization and session retention succeeded. The owner confirms Telethon still responds. This is light functional evidence, not peak-load, backup/recovery or production security acceptance.
+
+The free IP-based DNS hostname obtained a production Let's Encrypt certificate after stateful OCI ingress80/443 was allowed; 8080/5432 remain unpublished. Before adding ingress, local HTTP worked but remote HTTP/ACME timed out. Docker DNAT/FORWARD rules were already correct, so they were not flushed or broadly changed. A single proxy restart after connectivity was fixed triggered successful certificate issuance; no TLS verification bypass was used.
+
+The owner declined Pro after account creation failed and accepts the Ubuntu20.04/no-ESM learning risk. Standard coverage has ended; preflight warnings/thresholds remain unchanged. The setup guidance below describes a fresh deployment's safety gates, not a claim that the current host passed every gate. Do not restart/redeploy this backend for the Android-only permission-center update. Actual credentials exist only on the VM.
+
 ## Existing VM: Preserve the Current Workload
 
 The selected host is the existing Hyderabad E2 micro VM. The user wants to reuse it, not recreate it. It runs a Telethon script that this project must not stop, inspect for credentials, update or otherwise alter. SSH results from 2026-11-12 confirm Ubuntu 20.04.6, no active Ubuntu Pro subscription/ESM, 952 MiB RAM total, about 504 MiB available, no swap and about 42 GB free on `/`.
 
-**Do not run the deployment commands below yet.** The current container caps total 736 MiB, exceeding that observed available RAM, and are not reserved memory or a safe-capacity estimate. Collect peak resource use and inventory already installed Java, PostgreSQL, proxy and container tooling without changing anything. Then design and validate a smaller coexistence plan, or use approved separate infrastructure if the VM cannot safely support it. Never silently replace PostgreSQL with an in-memory production store to make it fit.
+**Do not run the default profile unchanged.** Its caps total 736 MiB, exceeding the original observed available RAM. The owner subsequently used the micro override described above, not that default alone. For a fresh deployment, review peak resource use and inventory tooling before making changes. Never silently replace PostgreSQL with an in-memory production store to make it fit.
 
 The existing OS can be retained only with an approved security-maintenance plan; Ubuntu Pro eligibility/ESM activation and applying fixes require operator review. Do not run package upgrades, reboot, provision another VM, enable paid services or add swap without explicit approval and a recovery plan for the existing workload. Codemagic only produces artifacts and has no SSH/deployment credentials.
 

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.personal.app.data.ServerConnector
 import dev.personal.app.data.userMessage
 import dev.personal.app.device.DeviceMetadata
+import dev.personal.app.permissions.PermissionCenter
 import dev.personal.contracts.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -74,10 +76,16 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun FoundationScreen(model: FoundationViewModel, metadata: DeviceMetadata, endpoint: String, onChangeServer: () -> Unit) {
     val state by model.state.collectAsStateWithLifecycle()
+    var showPermissions by rememberSaveable { mutableStateOf(false) }
+    if (showPermissions) {
+        PermissionCenter(onBack = { showPermissions = false })
+        return
+    }
     var confirmRevoke by remember { mutableStateOf<Device?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
     Scaffold(topBar = {
         TopAppBar(title = { Text("Personal Device Lab", style = MaterialTheme.typography.titleLarge) }, actions = {
+            IconButton(onClick = { showPermissions = true }) { Icon(Icons.Default.Security, "Permissions") }
             if (state.signedIn) {
                 IconButton(onClick = model::refresh, enabled = !state.busy) { Icon(Icons.Default.Refresh, "Refresh devices") }
                 IconButton(onClick = model::logout, enabled = !state.busy) { Icon(Icons.Default.ExitToApp, "Sign out") }
