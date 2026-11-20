@@ -7,7 +7,7 @@ https://129-225-75-12.nip.io/ready
 
 https://129-225-75-12.nip.io
 
-## Status: live learning foundation, permission center source
+## Status: live learning foundation, permission center build verified
 
 Source and corresponding tests exist for account registration/login, expiring sessions, refresh rotation, device registration, device-scoped metadata synchronization, installation-bound one-time pairing, device revocation and account deletion. The Android app includes endpoint setup, authentication and device management screens with Material 3 light/dark themes. Native session storage uses Android Keystore AES-GCM.
 
@@ -15,7 +15,7 @@ Source and corresponding tests exist for account registration/login, expiring se
 
 The owner subsequently built/deployed `6fac19c` on the existing OCI VM: PostgreSQL, the non-root Linux/amd64 Jib image and Caddy's trusted HTTPS endpoint are running. `/ready` returned HTTP 200 publicly. Registration/enrollment worked in Codemagic/Appetize preview; the owner confirmed Vivo V27 synchronization, session retention, both device listings and a working Telethon bot on 2026-11-17. This is one physical phone plus a preview, not two physical phones. Manual revocation was intentionally deferred to retain the preview session; pairing, destructive deletion and sustained-load acceptance remain open. No dependencies were installed on the restricted authoring computer.
 
-Android version `0.2.0` adds the local permission center described in [docs/PERMISSIONS.md](docs/PERMISSIONS.md). Its new Kotlin unit tests, compilation/lint and runtime permission acceptance require a fresh `android-foundation` build and device checks. It does not change the backend or invalidate existing sessions. Do not treat this learning deployment as production-ready.
+Android version `0.2.0` adds the local permission center described in [docs/PERMISSIONS.md](docs/PERMISSIONS.md). GitHub [Foundation checks run 3](https://github.com/Venugopal116/AndroidPersonalAppLearning/actions/runs/44694393122) at `da9e499` passed Android compilation, unit tests, lint and APK generation on 2026-11-20. Runtime permission acceptance still requires preview/device checks. It does not change the backend or invalidate existing sessions. Do not treat this learning deployment as production-ready.
 
 The official Gradle wrapper JAR download was blocked by the local Zscaler policy. Launchers, wrapper properties, a pinned distribution checksum and official checksum-verifying bootstrap scripts are included. Codemagic runs the shell bootstrap on its build machine automatically; no local installation is required. The repository is not fully self-contained until the verified wrapper JAR is added. Do not bypass workplace network policy.
 
@@ -167,4 +167,4 @@ CI installs/resolves its tools on external Codemagic runners (or optional manual
 | Container exits/OOM | Inspect memory/disk/CPU usage without dumping secrets. The 1 GB VM has no measured capacity guarantee. |
 | Device absent after reinstall | UUIDs/Keystore keys are installation-specific, not hardware identifiers. Re-register intentionally. |
 
-The GitHub destination is configured as `origin`; confirm the published commit on `main` before starting each cloud build. Official GitHub HTTPS API publication is used when this environment's Git upload fails; no network controls are disabled. No Oracle resource or remote configuration is created automatically. Remaining gates include the permission build/device checks, supported server security coverage, sustained resource measurements, backups and deferred destructive acceptance tests. Keep passwords, SSH keys and OCI tokens out of chat and source control.
+The GitHub destination is configured as `origin`; confirm the published commit on `main` before starting each cloud build. Official GitHub HTTPS API publication is used when this environment's Git upload fails; no network controls are disabled. No Oracle resource or remote configuration is created automatically. Remaining gates include permission device checks, supported server security coverage, sustained resource measurements, backups and deferred destructive acceptance tests. Keep passwords, SSH keys and OCI tokens out of chat and source control.
