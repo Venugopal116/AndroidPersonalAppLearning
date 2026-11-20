@@ -22,7 +22,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - run: pwsh -File scripts/bootstrap-wrapper.ps1
+      - name: Bootstrap verified Gradle wrapper
+        run: bash scripts/bootstrap-wrapper.sh
       - uses: gradle/actions/wrapper-validation@v4
       - uses: gradle/actions/setup-gradle@v4
       - run: bash gradlew -PbackendOnly :shared:test :backend:test :backend:installDist --no-daemon
@@ -34,6 +35,7 @@ jobs:
         with:
           name: backend-distribution
           path: backend/build/install/backend
+          retention-days: 3
   android:
     runs-on: ubuntu-latest
     steps:
@@ -42,8 +44,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
-      - run: pwsh -File scripts/bootstrap-wrapper.ps1
+      - name: Configure Android SDK
+        run: bash scripts/configure-android-sdk.sh
+      - name: Bootstrap verified Gradle wrapper
+        run: bash scripts/bootstrap-wrapper.sh
       - uses: gradle/actions/wrapper-validation@v4
       - uses: gradle/actions/setup-gradle@v4
       - run: bash gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --no-daemon
@@ -51,3 +55,4 @@ jobs:
         with:
           name: debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          retention-days: 3

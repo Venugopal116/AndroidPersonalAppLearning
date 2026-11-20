@@ -8,11 +8,21 @@ The local Gradle wrapper download failed because of Zscaler policy. No package/d
 
 On 2026-11-17, owner evidence confirmed the Linux/amd64 non-root image load, PostgreSQL health, private API readiness, public trusted HTTPS `/ready`, preview enrollment and real Vivo V27 synchronization. The owner confirmed session retention, both device listings and Telethon working. Manual revocation was deliberately not executed to preserve the preview session. Pairing, account deletion, backup recovery, minimum-API/OEM coverage and sustained load remain open; no broad device certification is claimed.
 
-The new Android 0.2.0 permission center and five policy test methods are not covered by those earlier builds. The new policy tests cover all eight grant/history/rationale combinations but have not run yet; fresh Codemagic Kotlin compilation/unit tests/lint and the device matrix in [PERMISSIONS.md](PERMISSIONS.md) are required. No runtime permission acceptance is claimed from editor/structure checks.
+The new Android 0.2.0 permission center and five policy test methods are not covered by those earlier builds. The new policy tests cover all eight grant/history/rationale combinations but have not run yet; fresh cloud Kotlin compilation/unit tests/lint and the device matrix in [PERMISSIONS.md](PERMISSIONS.md) are required. No runtime permission acceptance is claimed from editor/structure checks.
 
 Six standard-library preflight tests previously passed locally, covering security support, RAM, ports, tooling/disk and support expiry. Run them with `python -B -m unittest discover -s tests -p test_preflight.py -v`. They use synthetic host facts; the owner separately ran the real preflight and chose to proceed with the documented unsupported-OS learning risk. No thresholds were lowered.
 
-## Codemagic: Primary Execution Path
+## GitHub Actions: Current Build Path
+
+The owner switched to GitHub Actions after a Codemagic trial/build restriction and created a free Appetize account for limited previews. Run the manual `Foundation checks` workflow on `main`: it uses standard Linux runners, builds the APK, runs Android unit tests/lint and separately tests the backend against a disposable PostgreSQL service. Standard public-repository runners are free under GitHub's policy; private repositories draw from included usage. Artifact/cache limits are separate. Do not enable billing, use larger runners or move builds onto the shared 1 GB VM.
+
+The first GitHub run `44692208328` at `60b59d0` failed before Kotlin compilation: the backend failed in `pwsh -File scripts/bootstrap-wrapper.ps1`; Android failed in `android-actions/setup-android@v3`. The displayed Node/setup-java deprecation notices are warnings, not detailed failure causes. Public job metadata identified these steps; full log download required additional access, so no exact underlying exception is claimed.
+
+The corrected Linux workflow uses the existing checksum-verifying `bootstrap-wrapper.sh` and SDK-local `configure-android-sdk.sh` helper, retaining JDK17, SDK35, wrapper validation and tests. Shell syntax and the fake-tool SDK regression suite passed locally without dependency downloads. The new cloud run still must validate actual downloads/tool discovery and compile the permission code. Artifacts have three-day retention; download `debug-apk`, extract `app-debug.apk` and upload only that APK to Appetize. Appetize is a preview service, not a Kotlin build service. Its published free plan was 30 minutes/month with three-minute sessions when checked on 2026-11-20; confirm account limits before use.
+
+Existing backend/Telethon services and valuable preview sessions need no restart or redeployment. A different CI debug signing key may prevent an in-place Vivo update; do not uninstall a valued installation merely to bypass a signing mismatch. Use a disposable preview first and sign in to the same app account only when account testing is needed. Do not provide signing secrets, invitations or Appetize tokens in chat.
+
+## Codemagic: Optional Build Path
 
 The first Codemagic build of commit `25eb79b` stopped at SDK setup because `sdkmanager` was not on PATH. The owner's browser-edited SDK discovery and the explicit Ktor logging receiver fix were validated by the successful build at `d7bbf07`. That working SDK block is preserved. Additional SDK-helper fixture tests run without downloading packages; `bash scripts/test-configure-android-sdk.sh` passed locally. Android 0.2.0 requires a new Android workflow build; it does not change image packaging or the deployed backend.
 
